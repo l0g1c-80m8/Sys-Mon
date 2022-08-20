@@ -16,7 +16,7 @@ Process::Process(int pid): pid(pid) {
 //    float cpu;
     ram = LinuxParser::Ram(pid);
 //    long upTime;
-//    string command;
+    command = LinuxParser::Command(pid);
 }
 
 // Return this process's ID
@@ -25,8 +25,8 @@ int Process::Pid() { return pid; }
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() { return 0; }
 
-// TODO: Return the command that generated this process
-string Process::Command() { return string(); }
+// Return the command that generated this process
+string Process::Command() { return command; }
 
 // Return this process's memory utilization
 string Process::Ram() { return ram; }
