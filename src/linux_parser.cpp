@@ -117,9 +117,29 @@ long LinuxParser::Jiffies(vector<long> cpuStats = LinuxParser::CpuUtilization())
     return LinuxParser::ActiveJiffies(cpuStats) + LinuxParser::IdleJiffies(cpuStats);
 }
 
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
+// Read and return the number of active jiffies for a PID
+long LinuxParser::ActiveJiffies(int pid) {
+    string line, value;
+    // READ:
+    // (14) utime %lu
+    // (15) stime %lu
+    // (16) cutime %ld
+    // (17) cstime %ld
+    // (22) starttime %llu
+    // @ https://man7.org/linux/man-pages/man5/proc.5.html
+    long utime = 0, stime = 0, cutime = 0, cstime = 0;
+    int itr = 0;
+     std::ifstream stream(LinuxParser::kProcDirectory + to_string(pid) + LinuxParser::kStatFilename);
+    if (stream.is_open()) {
+        if (std::getline(stream, line)) {
+            std::istringstream basicInputStringStream(line);
+            while (itr < 13 && basicInputStringStream >> value) { itr += 1; }
+            basicInputStringStream >> utime >> stime >> cutime >> cstime;
+        }
+    }
+    // Active jiffies' calculation: https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
+    return utime + stime + cutime + cstime;
+}
 
 // Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies(vector<long> cpuStats = LinuxParser::CpuUtilization()) {

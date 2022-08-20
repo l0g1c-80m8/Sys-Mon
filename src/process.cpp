@@ -13,17 +13,22 @@ using std::vector;
 
 Process::Process(int pid): pid(pid) {
     user = LinuxParser::User(pid);
-//    float cpu;
     ram = LinuxParser::Ram(pid);
     upTime = LinuxParser::UpTime(pid);
     command = LinuxParser::Command(pid);
+
+    // Final CPU Utilization Calculation:
+    // https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
+    long activeJiffies = LinuxParser::ActiveJiffies(pid);
+    long elapsedTime = LinuxParser::UpTime() - upTime + 1;
+    cpu = activeJiffies / elapsedTime;
 }
 
 // Return this process's ID
 int Process::Pid() { return pid; }
 
-// TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+// Return this process's CPU utilization
+float Process::CpuUtilization() const { return cpu; }
 
 // Return the command that generated this process
 string Process::Command() { return command; }
@@ -37,6 +42,7 @@ string Process::User() { return user; }
 // Return the age of this process (in seconds)
 long int Process::UpTime() { return upTime; }
 
-// TODO: Overload the "less than" comparison operator for Process objects
-// REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& a[[maybe_unused]]) const { return true; }
+// Overload the "less than" comparison operator for Process objects
+bool Process::operator<(Process const& proc) const {
+    return CpuUtilization() > proc.CpuUtilization();
+}
