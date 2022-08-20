@@ -64,6 +64,7 @@ const std::string kTotalProcesses{"processes"};
 const std::string kRunningProcesses{"procs_running"};
 const std::string kCpuStats{"cpu"};
 const std::string kProcUid{"Uid:"};
+const std::string kProcMemSize{"VmSize:"};
 };  // namespace LinuxParser
 
 #endif

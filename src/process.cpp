@@ -13,6 +13,10 @@ using std::vector;
 
 Process::Process(int pid): pid(pid) {
     user = LinuxParser::User(pid);
+//    float cpu;
+    ram = LinuxParser::Ram(pid);
+//    long upTime;
+//    string command;
 }
 
 // Return this process's ID
@@ -24,8 +28,8 @@ float Process::CpuUtilization() { return 0; }
 // TODO: Return the command that generated this process
 string Process::Command() { return string(); }
 
-// TODO: Return this process's memory utilization
-string Process::Ram() { return string(); }
+// Return this process's memory utilization
+string Process::Ram() { return ram; }
 
 // TODO: Return the user (name) that generated this process
 string Process::User() { return user; }
