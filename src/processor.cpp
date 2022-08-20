@@ -4,7 +4,7 @@
 using std::string;
 using std::vector;
 
-Processor::Processor() : totalJiffies(0), idleJiffies(0) {};
+Processor::Processor() : activeJiffies(0), idleJiffies(0) {};
 
 // Return the aggregate CPU utilization
 float Processor::Utilization() {
@@ -13,15 +13,15 @@ float Processor::Utilization() {
     // https://stackoverflow.com/a/23376195/16112875
 
     // add a 1 to avoid zero division
-    long updatedTotalJiffies = LinuxParser::Jiffies();
-    long updatedIdleJiffies = LinuxParser::IdleJiffies();
+    long updatedActiveJiffies = LinuxParser::ActiveJiffies(cpuStats);
+    long updatedIdleJiffies = LinuxParser::IdleJiffies(cpuStats);
 
-    float deltaTotal = updatedTotalJiffies - totalJiffies;
-    float deltaIdle = updatedIdleJiffies - idleJiffies;
+    long deltaActive = updatedActiveJiffies - activeJiffies;
+    long deltaIdle = updatedIdleJiffies - idleJiffies;
 
-    totalJiffies = updatedTotalJiffies;
+    activeJiffies = updatedActiveJiffies;
     idleJiffies = updatedIdleJiffies;
 
     // return fraction, % calculated in ncurses_display.cpp
-    return (deltaTotal - deltaIdle) / deltaTotal;
+    return (float) deltaActive / (deltaActive + deltaIdle);;
 }

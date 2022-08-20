@@ -84,11 +84,11 @@ float LinuxParser::MemoryUtilization() {
             std::istringstream basicInputStringStream(line);
             while (basicInputStringStream >> key >> value && !(foundMemFree && foundMemTotal)) {
                 if (key == kMemTotal) {
-                    memTotal = std::stof(value);
+                    memTotal = stof(value);
                     foundMemTotal = true;
                 }
                 else if (key == kMemFree) {
-                    memFree = std::stof(value);
+                    memFree = stof(value);
                     foundMemFree = true;
                 }
             }
@@ -106,15 +106,15 @@ long LinuxParser::UpTime() {
         if (std::getline(stream, line)) {
             std::istringstream basicInputStringStream(line);
             basicInputStringStream >> value;
-            uptime = std::stol(value);
+            uptime = stol(value);
         }
     }
     return uptime;
 }
 
 // Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() {
-    return LinuxParser::ActiveJiffies() + LinuxParser::IdleJiffies();
+long LinuxParser::Jiffies(vector<long> cpuStats = LinuxParser::CpuUtilization()) {
+    return LinuxParser::ActiveJiffies(cpuStats) + LinuxParser::IdleJiffies(cpuStats);
 }
 
 // TODO: Read and return the number of active jiffies for a PID
@@ -122,34 +122,48 @@ long LinuxParser::Jiffies() {
 long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
 
 // Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() {
-    vector<long> cpuStats = LinuxParser::CpuUtilization();
+long LinuxParser::ActiveJiffies(vector<long> cpuStats = LinuxParser::CpuUtilization()) {
     long activeJiffies = cpuStats[0] + cpuStats[1] + cpuStats[2] + cpuStats[5] + cpuStats[6] + cpuStats[7];
     return activeJiffies;
 }
 
 // Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() {
-    vector<long> cpuStats = LinuxParser::CpuUtilization();
+long LinuxParser::IdleJiffies(vector<long> cpuStats = LinuxParser::CpuUtilization()) {
     long idleJiffies = cpuStats[3] + cpuStats[4];
     return idleJiffies;
 }
 
 // Read and return CPU stats to be used for calculating CPU utilization
 vector<long> LinuxParser::CpuUtilization() {
-    string line, key;
-    string user{"1"}, nice{"1"}, system{"1"}, idle{"1"}, io_wait{"1"}, irq{"1"}, soft_irq{"1"}, steal{"1"}, guest{"1"}, guest_nice{"1"};
+    string line, key, user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
     bool foundCpuStats = false;
-    std::ifstream stream(kProcDirectory + kStatFilename);
-    if (stream.is_open()) {
-        while (std::getline(stream, line) && !foundCpuStats) {
-            while (stream >> key >> user >> nice >> system >> idle >> io_wait >> irq >> soft_irq >> steal >> guest >> guest_nice) {
-                if (key == kCpuStats)
+    std::ifstream filestream(kProcDirectory + kStatFilename);
+    if (filestream.is_open()) {
+        while (getline(filestream, line) && !foundCpuStats) {
+            std::istringstream stream(line);
+            while (stream >> key) {
+                if (key == kCpuStats) {
+                    foundCpuStats = true;
+                    // See below for order of tokens {user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice}:
+                    // https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
+                    stream >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
                     break;
+                }
             }
         }
     }
-    return vector<long> {stol(user), stol(nice), stol(system), stol(idle), stol(io_wait), stol(irq), stol(soft_irq), stol(steal), stol(guest), stol(guest_nice)};
+    return vector<long> {
+        stol(user),
+        stol(nice),
+        stol(system),
+        stol(idle),
+        stol(iowait),
+        stol(irq),
+        stol(softirq),
+        stol(steal),
+        stol(guest),
+        stol(nice)
+    };
 }
 
 // Read and return the total number of processes
@@ -163,7 +177,7 @@ int LinuxParser::TotalProcesses() {
             std::istringstream basicInputStringStream(line);
             while (basicInputStringStream >> key >> value) {
                 if (key == kTotalProcesses) {
-                    totalProcesses = std::stol(value);
+                    totalProcesses = stol(value);
                     foundTotalProcesses = true;
                     break;
                 }
@@ -184,7 +198,7 @@ int LinuxParser::RunningProcesses() {
             std::istringstream basicInputStringStream(line);
             while (basicInputStringStream >> key >> value) {
                 if (key == kRunningProcesses) {
-                    runningProcesses = std::stol(value);
+                    runningProcesses = stol(value);
                     foundRunningProcesses = true;
                     break;
                 }

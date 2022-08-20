@@ -1,9 +1,12 @@
 #ifndef SYSTEM_PARSER_H
 #define SYSTEM_PARSER_H
 
+#include <vector>
 #include <fstream>
 #include <regex>
 #include <string>
+
+using std::vector;
 
 namespace LinuxParser {
 // Paths
@@ -41,10 +44,10 @@ enum CPUStates {
   kGuestNice_
 };
 std::vector<long> CpuUtilization();
-long Jiffies();
-long ActiveJiffies();
+long Jiffies(vector<long> cpuStats);
+long ActiveJiffies(vector<long> cpuStats);
 long ActiveJiffies(int pid);
-long IdleJiffies();
+long IdleJiffies(vector<long> cpuStats);
 
 // Processes
 std::string Command(int pid);
