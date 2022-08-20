@@ -4,8 +4,8 @@
 #include <string>
 
 namespace Format {
-std::string FullTimeFormat(long time);
-std::string ElapsedTime(long times);
+    std::string FullTimeFormat(long time);
+    std::string ElapsedTime(long times);  // See src/format.cpp
 };                                    // namespace Format
 
 #endif
