@@ -41,7 +41,6 @@ enum CPUStates {
   kGuestNice_
 };
 std::vector<std::string> CpuUtilization();
-std::vector<float> CpuUtilization(int); // get cpu utilization of a process
 long Jiffies();
 long ActiveJiffies();
 long ActiveJiffies(int pid);
@@ -54,14 +53,10 @@ std::string Uid(int pid);
 std::string User(int pid);
 long int UpTime(int pid);
 
-enum ProcessStates {
-    // define the column number to read process state values at
-    kUtime_ = 14,
-    kStime_ = 15,
-    kCutime_ = 16,
-    kCstime_ = 17,
-    kStarttime_ = 22
-};
+// File Keys
+const std::string kPrettyName{"PRETTY_NAME"};
+const std::string kMemFree{"MemFree"};
+const std::string kMemTotal{"MemTotal"};
 };  // namespace LinuxParser
 
 #endif
