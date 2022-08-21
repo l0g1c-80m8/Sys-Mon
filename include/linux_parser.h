@@ -1,9 +1,12 @@
 #ifndef SYSTEM_PARSER_H
 #define SYSTEM_PARSER_H
 
+#include <vector>
 #include <fstream>
 #include <regex>
 #include <string>
+
+using std::vector;
 
 namespace LinuxParser {
 // Paths
@@ -40,28 +43,28 @@ enum CPUStates {
   kGuest_,
   kGuestNice_
 };
-std::vector<std::string> CpuUtilization();
-std::vector<float> CpuUtilization(int); // get cpu utilization of a process
-long Jiffies();
-long ActiveJiffies();
+std::vector<long> CpuUtilization();
+long Jiffies(vector<long> cpuStats);
+long ActiveJiffies(vector<long> cpuStats);
 long ActiveJiffies(int pid);
-long IdleJiffies();
+long IdleJiffies(vector<long> cpuStats);
 
 // Processes
 std::string Command(int pid);
 std::string Ram(int pid);
 std::string Uid(int pid);
 std::string User(int pid);
-long int UpTime(int pid);
+float UpTime(int pid);
 
-enum ProcessStates {
-    // define the column number to read process state values at
-    kUtime_ = 14,
-    kStime_ = 15,
-    kCutime_ = 16,
-    kCstime_ = 17,
-    kStarttime_ = 22
-};
+// File Keys
+const std::string kPrettyName{"PRETTY_NAME"};
+const std::string kMemFree{"MemFree"};
+const std::string kMemTotal{"MemTotal"};
+const std::string kTotalProcesses{"processes"};
+const std::string kRunningProcesses{"procs_running"};
+const std::string kCpuStats{"cpu"};
+const std::string kProcUid{"Uid:"};
+const std::string kProcMemSize{"VmSize:"};
 };  // namespace LinuxParser
 
 #endif

@@ -11,50 +11,38 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-Process::Process(int pid) : pid_(pid) {
-    command_ = LinuxParser::Command(Pid());
-    user_ = LinuxParser::User(Pid());
-    uptime_ = LinuxParser::UpTime(Pid());
+Process::Process(int pid): pid(pid) {
+    user = LinuxParser::User(pid);
+    ram = to_string(stol(LinuxParser::Ram(pid)) / 1024); // convert from KB to MB
+    upTime = LinuxParser::UpTime(pid);
+    command = LinuxParser::Command(pid);
 
-    string usage = LinuxParser::Ram(Pid());
-    try {
-        float mbUsage = std::stol(usage) / 1024;
-        ram_ = std::to_string(mbUsage);
-    } catch (const std::invalid_argument& arg) {
-        ram_ = "0";
-    }
-
-    long uptime = LinuxParser::UpTime();
-    vector<float> val = LinuxParser::CpuUtilization(Pid());
-    // if all values were read
-    if (val.size() == 5) {
-        // add utime, stime, cutime, cstime (in seconds)
-        float totaltime = val[kUtime_] + val[kStime_] + val[kCutime_] + val[kCstime_];
-        float seconds = uptime - val[kStarttime_];
-        cpu_ = totaltime / seconds;
-    } else
-        cpu_ = 0.0f;
+    // Final CPU Utilization Calculation:
+    // https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
+    long activeJiffies = LinuxParser::ActiveJiffies(pid);
+    long elapsedTime = LinuxParser::UpTime() - upTime + 1;
+    cpu = (float) activeJiffies / (sysconf(_SC_CLK_TCK) * elapsedTime);
 }
 
 // Return this process's ID
-int Process::Pid() { return pid_; }
+int Process::Pid() { return pid; }
 
 // Return this process's CPU utilization
-float Process::CpuUtilization() const { return cpu_; }
+float Process::CpuUtilization() const { return cpu; }
 
 // Return the command that generated this process
-string Process::Command() { return command_; }
+string Process::Command() { return command; }
 
 // Return this process's memory utilization
-string Process::Ram() { return ram_; }
+string Process::Ram() { return ram; }
 
 // Return the user (name) that generated this process
-string Process::User() { return user_; }
+string Process::User() { return user; }
 
 // Return the age of this process (in seconds)
-long int Process::UpTime() { return uptime_; }
+long int Process::UpTime() { return upTime; }
 
 // Overload the "less than" comparison operator for Process objects
-bool Process::operator<(Process const& a) const {
-    return CpuUtilization() > a.CpuUtilization();
+bool Process::operator<(Process const& proc) const {
+    return CpuUtilization() > proc.CpuUtilization();
 }

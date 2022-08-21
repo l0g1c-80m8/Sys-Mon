@@ -1,40 +1,27 @@
 #include "processor.h"
 #include "linux_parser.h"
-#include <vector>
 
-using std::vector;
 using std::string;
+using std::vector;
 
-Processor::Processor() : prevTotalTime(0.0), prevIdleTime(0.0) {};
-
-// convert the given string vector into a long vector
-vector<long> Processor::GetVectorizedUtilizations(vector<string> values) {
-    vector<long> utilizations{};
-
-    for (int idx = 0; idx < (int)values.size(); idx++) {
-        try {
-            utilizations.push_back(std::stol(values[idx]));
-        } catch (const std::invalid_argument& arg) {
-            utilizations.push_back((long) 0);
-        }
-    }
-    return utilizations;
-}
+Processor::Processor() : activeJiffies(0), idleJiffies(0) {};
 
 // Return the aggregate CPU utilization
 float Processor::Utilization() {
-    vector<long> cpuValues = GetVectorizedUtilizations(LinuxParser::CpuUtilization());
-    float totalTime =
-            cpuValues[LinuxParser::kUser_] + cpuValues[LinuxParser::kNice_] + cpuValues[LinuxParser::kSystem_] + cpuValues[LinuxParser::kIdle_] + cpuValues[LinuxParser::kIOwait_] + cpuValues[LinuxParser::kIRQ_] +  cpuValues[LinuxParser::kSoftIRQ_] + cpuValues[LinuxParser::kSteal_];
-    float idleTime =
-            cpuValues[LinuxParser::kIOwait_] + cpuValues[LinuxParser::kIdle_];
+    vector<long> cpuStats = LinuxParser::CpuUtilization();
 
-    float deltaTotal = totalTime - prevTotalTime;
-    float deltaIdle = idleTime - prevIdleTime;
-    float usage = (deltaTotal - deltaIdle) / deltaTotal;
+    // https://stackoverflow.com/a/23376195/16112875
 
-    prevIdleTime = idleTime;
-    prevTotalTime = totalTime;
+    // add a 1 to avoid zero division
+    long updatedActiveJiffies = LinuxParser::ActiveJiffies(cpuStats);
+    long updatedIdleJiffies = LinuxParser::IdleJiffies(cpuStats);
 
-    return usage;
+    long deltaActive = updatedActiveJiffies - activeJiffies;
+    long deltaIdle = updatedIdleJiffies - idleJiffies;
+
+    activeJiffies = updatedActiveJiffies;
+    idleJiffies = updatedIdleJiffies;
+
+    // return fraction, % calculated in ncurses_display.cpp
+    return (float) deltaActive / (deltaActive + deltaIdle);;
 }
