@@ -182,7 +182,7 @@ vector<long> LinuxParser::CpuUtilization() {
         stol(softirq),
         stol(steal),
         stol(guest),
-        stol(nice)
+        stol(guest_nice)
     };
 }
 
