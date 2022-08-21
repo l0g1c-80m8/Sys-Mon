@@ -13,7 +13,7 @@ using std::vector;
 
 Process::Process(int pid): pid(pid) {
     user = LinuxParser::User(pid);
-    ram = LinuxParser::Ram(pid);
+    ram = to_string(stol(LinuxParser::Ram(pid)) / 1024); // convert from KB to MB
     upTime = LinuxParser::UpTime(pid);
     command = LinuxParser::Command(pid);
 
