@@ -321,5 +321,8 @@ float LinuxParser::UpTime(int pid) {
                 startTime = value;
             }
         }
-    return stol(startTime) / sysconf(_SC_CLK_TCK);
+        // system uptime (seconds) - start time of the process after system boot
+        // Example: System uptime = 30 seconds, process start time = 2000 clock ticks (after boot), clock tick rate = 100
+        // process uptime = 30 - (2000 / 100) = 10 seconds
+    return LinuxParser::UpTime() - stol(startTime) / sysconf(_SC_CLK_TCK);
 }

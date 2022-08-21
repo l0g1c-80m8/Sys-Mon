@@ -14,14 +14,13 @@ using std::vector;
 Process::Process(int pid): pid(pid) {
     user = LinuxParser::User(pid);
     ram = to_string(stol(LinuxParser::Ram(pid)) / 1024); // convert from KB to MB
-    upTime = LinuxParser::UpTime(pid);
+    upTime = LinuxParser::UpTime(pid); // process uptime in seconds; See LinuxParser::UpTime(int pid);
     command = LinuxParser::Command(pid);
 
     // Final CPU Utilization Calculation:
     // https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
     long activeJiffies = LinuxParser::ActiveJiffies(pid);
-    long elapsedTime = LinuxParser::UpTime() - upTime + 1;
-    cpu = (float) activeJiffies / (sysconf(_SC_CLK_TCK) * elapsedTime);
+    cpu = (float) activeJiffies / (sysconf(_SC_CLK_TCK) * upTime);
 }
 
 // Return this process's ID
