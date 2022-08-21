@@ -264,7 +264,7 @@ string LinuxParser::Ram(int pid) {
 }
 
 // Read and return the user ID associated with a process
-string LinuxParser::Uid(int pid[[maybe_unused]]) {
+string LinuxParser::Uid(int pid) {
     string line, key;
     string uid{"-1"};
     bool foundUid = false;
