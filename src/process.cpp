@@ -21,7 +21,7 @@ Process::Process(int pid): pid(pid) {
     // https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
     long activeJiffies = LinuxParser::ActiveJiffies(pid);
     long elapsedTime = LinuxParser::UpTime() - upTime + 1;
-    cpu = activeJiffies / elapsedTime;
+    cpu = (float) activeJiffies / (sysconf(_SC_CLK_TCK) * elapsedTime);
 }
 
 // Return this process's ID

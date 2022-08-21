@@ -54,7 +54,7 @@ std::string Command(int pid);
 std::string Ram(int pid);
 std::string Uid(int pid);
 std::string User(int pid);
-long int UpTime(int pid);
+float UpTime(int pid);
 
 // File Keys
 const std::string kPrettyName{"PRETTY_NAME"};

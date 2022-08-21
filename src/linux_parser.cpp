@@ -308,7 +308,7 @@ string LinuxParser::User(int pid) {
 }
 
 // Read and return the uptime of a process
-long LinuxParser::UpTime(int pid) {
+float LinuxParser::UpTime(int pid) {
     string line, value;
     string startTime{"0"};
     int itr = 0;
